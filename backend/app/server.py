@@ -4,16 +4,18 @@ from typing import Annotated, Optional
 import orjson
 from fastapi import Cookie, FastAPI, Form, Request, UploadFile
 from fastapi.staticfiles import StaticFiles
-from gizmo_agent import agent, ingest_runnable
 from langchain.schema.runnable import RunnableConfig
 from langserve import add_routes
 from typing_extensions import TypedDict
 
 from app.storage.redis import RedisStorage
+from app.storage.myscale import MyScaleStorage
 
 app = FastAPI()
+# storage = RedisStorage()
+storage = MyScaleStorage()
 
-storage = RedisStorage()
+from gizmo_agent import agent, ingest_runnable
 
 FEATURED_PUBLIC_ASSISTANTS = [
     "ba721964-b7e4-474c-b817-fb089d94dc5f",
@@ -28,7 +30,8 @@ def attach_user_id_to_config(
     config: RunnableConfig,
     request: Request,
 ) -> RunnableConfig:
-    config["configurable"]["user_id"] = request.cookies["opengpts_user_id"]
+    # config["configurable"]["user_id"] = request.cookies["opengpts_user_id"]
+    config["configurable"]["user_id"] = "ba721964-b7e4-474c-b817-fb089d94dc5f"
     return config
 
 

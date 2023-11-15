@@ -5,9 +5,6 @@ import orjson
 
 class BaseStorage(BaseModel):
     """Storage Interface"""
-    assistant_hash_keys: List[str]
-    thread_hash_keys: List[str]
-    public_user_id: str
 
     def __init__(self):
         super().__init__()

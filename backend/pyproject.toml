@@ -26,6 +26,7 @@ langchain = "^0.0.335"
 python-magic = "^0.4.27"
 pydantic = "^2.5.0"
 clickhouse-sqlalchemy = "^0.3.0"
+clickhouse-connect = "^0.6.20"
 
 [tool.poetry.group.dev.dependencies]
 uvicorn = "^0.23.2"

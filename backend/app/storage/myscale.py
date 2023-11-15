@@ -13,19 +13,19 @@ from .base import BaseStorage
 class MyScaleStorage(BaseStorage):
     """Redis storage for backend"""
 
-    def __init__(self, db="opengpts"):
+    def __init__(self):
         super().__init__()
-        self.db = os.environ.get("MYSCALE_DATABASE", "opengpts")
+        self._db = os.environ.get("MYSCALE_DATABASE", "opengpts")
         client = self._get_myscale_client()
-        client.command(f"CREATE DATABASE IF NOT EXISTS {self.db}")
-        client.command(f"""CREATE TABLE IF NOT EXISTS {self.db}.threads(
+        client.command(f"CREATE DATABASE IF NOT EXISTS {self._db}")
+        client.command(f"""CREATE TABLE IF NOT EXISTS {self._db}.threads(
                         thread_id String,
                         assistant_id String,  -- foreign key
                         user_id String,
                         name String,
                         updated_at DateTime
                         ) ORDER BY (assistant_id, thread_id)""")
-        client.command(f"""CREATE TABLE IF NOT EXISTS {self.db}.assistants(
+        client.command(f"""CREATE TABLE IF NOT EXISTS {self._db}.assistants(
                         assistant_id String,
                         user_id String,
                         name String,
@@ -37,7 +37,7 @@ class MyScaleStorage(BaseStorage):
     def _get_myscale_client(self) -> Client:
         """Get a MyScale client."""
         url = os.environ.get("MYSCALE_URL")
-        port = os.environ.get("MYSCALE_PORT")
+        port = os.environ.get("MYSCALE_PORT", "443")
         username = os.environ.get("MYSCALE_USER")
         password = os.environ.get("MYSCALE_PASS")
         if not (url and port and username and password):
@@ -45,7 +45,7 @@ class MyScaleStorage(BaseStorage):
                              "Please check url, port, user and password to your cluster.")
         return get_client(
             host=url,
-            port=port,
+            port=int(port),
             username=username,
             password=password,
         )
@@ -57,13 +57,13 @@ class MyScaleStorage(BaseStorage):
 
     def list_assistants(self, user_id: str) -> List[dict]:
         client = self._get_myscale_client()
-        query = f"SELECT * FROM {self.db}.assistants WHERE user_id = '{user_id}'"
+        query = f"SELECT * FROM {self._db}.assistants WHERE user_id = '{user_id}'"
         return [r for r in client.query(query).named_results()]
 
     def list_public_assistants(self, assistant_ids: List[str]) -> List[dict]:
         client = self._get_myscale_client()
         ids_str = ",".join([f"'{a_id}'" for a_id in assistant_ids])
-        query = (f"SELECT * FROM {self.db}.assistants WHERE public=true "
+        query = (f"SELECT * FROM {self._db}.assistants WHERE public=true "
                  f"AND assistant_id IN [{ids_str}]")
         return [r for r in client.query(query).named_results()]
     
@@ -86,18 +86,18 @@ class MyScaleStorage(BaseStorage):
         }
         client = self._get_myscale_client()
         keys, values = list(zip(*saved.items()))
-        client.insert(table="assistants", database=self.db, 
+        client.insert(table="assistants", database=self._db, 
                       data=[values], column_names=keys)
         return saved
 
     def list_threads(self, user_id: str):
         client = self._get_myscale_client()
-        query = f"SELECT * FROM {self.db}.threads WHERE user_id = '{user_id}'"
+        query = f"SELECT * FROM {self._db}.threads WHERE user_id = '{user_id}'"
         return [r for r in client.query(query).named_results()]
 
     def get_thread_messages(self, user_id: str, thread_id: str):
         client = self._get_myscale_client()
-        query = (f"SELECT * FROM {self.db}.messages "
+        query = (f"SELECT * FROM {self._db}.messages "
                  f"WHERE session_id = '{self.thread_messages_key(user_id, thread_id)}'")
         return [r for r in client.query(query).named_results()]
 
@@ -111,6 +111,6 @@ class MyScaleStorage(BaseStorage):
         }
         client = self._get_myscale_client()
         keys, values = list(zip(*saved.items()))
-        client.insert(table="threads", database=self.db, 
+        client.insert(table="threads", database=self._db, 
                       data=[values], column_names=keys)
         return saved

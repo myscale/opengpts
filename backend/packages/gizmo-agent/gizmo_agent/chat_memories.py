@@ -90,6 +90,6 @@ def build_myscale_chat_history(session_id: str) -> BaseMessageConverter:
         custom_message_converter=DefaultClickhouseMessageConverter("messages"))
 
 ChatMemoryImpls: Dict[str, BaseMessageConverter] = {
-    "redis": partial(RedisChatMessageHistory, url=os.environ["REDIS_URL"]),
-    "myscale": build_myscale_chat_history,
+    "redis": lambda: partial(RedisChatMessageHistory, url=os.environ["REDIS_URL"]),
+    "myscale": lambda: build_myscale_chat_history,
 }

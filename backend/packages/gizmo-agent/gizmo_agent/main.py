@@ -110,7 +110,7 @@ agent = RunnableWithMessageHistory(
     # first arg should be a function that
     # - accepts a single arg "session_id"
     # - returns a BaseChatMessageHistory instance
-    ChatMemoryImpls["myscale"],
+    ChatMemoryImpls["myscale"](),
     input_key="input",
     output_key="messages",
     history_key="messages",
