@@ -2,9 +2,9 @@ import os
 from functools import partial
 from typing import Any, Mapping, Optional, Sequence
 
+from .chat_memories import ChatMemoryImpls
 from agent_executor import AgentExecutor
 from agent_executor.history import RunnableWithMessageHistory
-from langchain.memory import RedisChatMessageHistory
 from langchain.pydantic_v1 import BaseModel, Field
 from langchain.schema.messages import AnyMessage
 from langchain.schema.runnable import (
@@ -110,7 +110,7 @@ agent = RunnableWithMessageHistory(
     # first arg should be a function that
     # - accepts a single arg "session_id"
     # - returns a BaseChatMessageHistory instance
-    partial(RedisChatMessageHistory, url=os.environ["REDIS_URL"]),
+    ChatMemoryImpls["myscale"],
     input_key="input",
     output_key="messages",
     history_key="messages",

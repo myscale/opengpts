@@ -1,30 +1,33 @@
 from pydantic import BaseModel
-
+from typing import List
 import orjson
 
 
 class BaseStorage(BaseModel):
     """Storage Interface"""
+    assistant_hash_keys: List[str]
+    thread_hash_keys: List[str]
+    public_user_id: str
 
     def __init__(self):
         super().__init__()
 
-    def assistants_list_key(self, user_id: str):
+    def assistants_list_key(self, user_id: str) -> str:
         return f"opengpts:{user_id}:assistants"
 
-    def assistant_key(self, user_id: str, assistant_id: str):
+    def assistant_key(self, user_id: str, assistant_id: str) -> str:
         """create key for assistant"""
         return f"opengpts:{user_id}:assistant:{assistant_id}"
 
-    def threads_list_key(self, user_id: str):
+    def threads_list_key(self, user_id: str) -> str:
         """create threads key"""
         return f"opengpts:{user_id}:threads"
 
-    def thread_key(self, user_id: str, thread_id: str):
+    def thread_key(self, user_id: str, thread_id: str) -> str:
         """create thread key"""
         return f"opengpts:{user_id}:thread:{thread_id}"
 
-    def thread_messages_key(self, user_id: str, thread_id: str):
+    def thread_messages_key(self, user_id: str, thread_id: str) -> str:
         # Needs to match key used by RedisChatMessageHistory
         # TODO we probably want to align this with the others
         return f"message_store:{user_id}:{thread_id}"
@@ -32,7 +35,7 @@ class BaseStorage(BaseModel):
     def _dump(self, map: dict) -> dict:
         return {k: orjson.dumps(v) if v is not None else None for k, v in map.items()}
 
-    def load(self, keys: list[str], values: list[bytes]) -> dict:
+    def load(self, keys: List[str], values: List[bytes]) -> dict:
         return {
             k: orjson.loads(v) if v is not None else None for k, v in zip(keys, values)
         }
@@ -40,7 +43,7 @@ class BaseStorage(BaseModel):
     def list_assistants(self, user_id: str):
         raise NotImplementedError("`list_assistants` is not implemented.")
 
-    def list_public_assistants(self, assistant_ids: list[str]):
+    def list_public_assistants(self, assistant_ids: List[str]):
         raise NotImplementedError("`list_public_assistants` is not implemented.")
 
     def put_assistant(

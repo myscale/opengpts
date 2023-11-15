@@ -41,7 +41,7 @@ class RedisStorage(BaseStorage):
             assistants = pipe.execute()
         return [self.load(self.assistant_hash_keys, values) for values in assistants]
 
-    def list_public_assistants(self, assistant_ids: list[str]):
+    def list_public_assistants(self, assistant_ids: List[str]):
         if not assistant_ids:
             return []
         client = self._get_redis_client()
